@@ -205,3 +205,9 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Игнорируем виртуальное окружение проекта
+venv/
+
+# Игнорируем папку с данными
+data/
