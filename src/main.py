@@ -1,7 +1,3 @@
-import streamlit as st
-from mock_data import test_entity as default_data
-from logic import check_rules
-
 # Настройка страницы
 st.set_page_config(page_title="Movie Advisor", page_icon="🎬")
 st.title("Movie Rule-Based System 🎬")
@@ -11,6 +7,8 @@ st.sidebar.header("Входные данные фильма")
 
 # Поля ввода в боковой панели
 title = st.sidebar.text_input("Название фильма:", value=default_data["title"])
+
+# ВАЖНО: берем данные из mock_data по их старым ключам для дефолтных значений
 imdb_score = st.sidebar.number_input(
     "IMDB Score:", 
     min_value=0.0, 
@@ -20,7 +18,7 @@ imdb_score = st.sidebar.number_input(
 )
 is_available = st.sidebar.checkbox("Доступность (Available)", value=default_data["is_available"])
 
-# Выбор настроения (для critical_rules в JSON)
+# Выбор настроения
 sentiment = st.sidebar.selectbox(
     "Настроение отзывов:", 
     options=["positive", "negative"], 
@@ -36,13 +34,13 @@ genres = [g.strip() for g in genres_input.split(",") if g.strip()]
 
 # Кнопка запуска проверки
 if st.button("Запустить анализ по правилам"):
-    # Собираем данные в один словарь (ключи должны совпадать с logic.py)
+    # СОБИРАЕМ ДАННЫЕ: переименовываем ключи под logic.py
     current_movie_data = {
         "title": title,
-        "imdb_score": imdb_score,
+        "rating_value": imdb_score,  # logic.py ждет именно rating_value
         "is_available": is_available,
         "review_sentiment": sentiment,
-        "genres": genres
+        "tags_list": genres          # logic.py ждет именно tags_list
     }
     
     # Вызываем логику
@@ -51,12 +49,20 @@ if st.button("Запустить анализ по правилам"):
     # Красивый вывод результата
     if "✅" in result:
         st.success(result)
-        st.balloons() # Маленький эффект успеха
+        st.balloons() 
     elif "⛔️" in result:
         st.error(result)
     else:
         st.warning(result)
 
-# Отображение сырых данных для отладки
-with st.expander("Посмотреть JSON текущего фильма"):
-    st.json(current_movie_data if 'current_movie_data' in locals() else default_data)
+# Отображение данных для отладки
+with st.expander("Посмотреть структуру данных для анализа"):
+    # Показываем финальный словарь, который уходит в логику
+    debug_data = {
+        "title": title,
+        "rating_value": imdb_score,
+        "is_available": is_available,
+        "review_sentiment": sentiment,
+        "tags_list": genres
+    }
+    st.json(debug_data)
