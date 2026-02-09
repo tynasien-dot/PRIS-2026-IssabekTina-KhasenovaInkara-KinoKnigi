@@ -1,0 +1,17 @@
+{
+  "scenario_name": "Базовая проверка фильма",
+  "thresholds": {
+    "min_rating": 5.0,
+    "max_rating": 10.0
+  },
+  "critical_rules": {
+    "must_be_available": true
+  },
+  "lists": {
+    "blacklist": [
+      "Horror",
+      "Gore",
+      "Restricted"
+    ]
+  }
+}
