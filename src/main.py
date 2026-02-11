@@ -1,24 +1,23 @@
 import streamlit as st
 from mock_data import movies_data
-from logic import check_rules      # функция проверки правил
+from logic import check_rules      
 
-# Настройка страницы
+import networkx as nx
+import matplotlib.pyplot as plt
+
 st.set_page_config(page_title="Movie Advisor", page_icon="🎬")
 st.title("Movie Rule-Based System 🎬")
 st.write("**Текущий сценарий:** Проверка по правилам проекта")
 
 st.sidebar.header("Входные данные фильма")
 
-# --- Выбор фильма из списка ---
 selected_movie_title = st.sidebar.selectbox(
     "Выберите фильм",
     options=[m["title"] for m in movies_data]
 )
 
-# Берем данные выбранного фильма
 default_data = next(m for m in movies_data if m["title"] == selected_movie_title)
 
-# --- Поля ввода в боковой панели ---
 title = st.sidebar.text_input("Название фильма:", value=default_data["title"])
 imdb_score = st.sidebar.number_input(
     "IMDB Score:", 
@@ -39,14 +38,13 @@ genres_input = st.sidebar.text_input(
 )
 genres = [g.strip() for g in genres_input.split(",") if g.strip()]
 
-# --- Кнопка запуска проверки ---
 if st.button("Запустить анализ по правилам"):
     current_movie_data = {
         "title": title,
-        "rating_value": imdb_score,  # logic.py ждет именно rating_value
+        "rating_value": imdb_score,  
         "is_available": is_available,
         "review_sentiment": sentiment,
-        "tags_list": genres          # logic.py ждет именно tags_list
+        "tags_list": genres          
     }
     
     result = check_rules(current_movie_data)
@@ -59,7 +57,6 @@ if st.button("Запустить анализ по правилам"):
     else:
         st.warning(result)
 
-# --- Отладочный вывод ---
 with st.expander("Посмотреть структуру данных для анализа"):
     debug_data = {
         "title": title,
@@ -69,3 +66,56 @@ with st.expander("Посмотреть структуру данных для а
         "tags_list": genres
     }
     st.json(debug_data)
+
+
+# Knowledge Graph 
+
+st.divider()
+st.header("Knowledge Graph: Связи фильма 🎞️🕸")
+
+G = nx.Graph()
+
+# добавляем фильмы и жанры как узлы
+for movie in movies_data:
+    G.add_node(movie["title"], type="movie")
+    for genre in movie["genres"]:
+        G.add_node(genre, type="genre")
+        G.add_edge(movie["title"], genre)
+
+all_nodes = list(G.nodes())
+selected_node = st.selectbox(
+    "Выберите объект для анализа связей:",
+    options=all_nodes
+)
+
+if st.button("Показать связи в графе"):
+    neighbors = list(G.neighbors(selected_node))
+    if neighbors:
+        st.success(f"Объект **{selected_node}** связан с: {', '.join(neighbors)}")
+    else:
+        st.warning("Связи не найдены")
+
+st.write("### Визуализация графа знаний")
+
+fig, ax = plt.subplots(figsize=(9, 6))
+pos = nx.spring_layout(G, seed=42)
+
+node_colors = []
+for node in G.nodes(data=True):
+    if node[1].get("type") == "movie":
+        node_colors.append("lightgreen")
+    else:
+        node_colors.append("lightblue")
+
+nx.draw(
+    G,
+    pos,
+    with_labels=True,
+    node_color=node_colors,
+    edge_color="gray",
+    node_size=1800,
+    font_size=9,
+    ax=ax
+)
+
+st.pyplot(fig)
