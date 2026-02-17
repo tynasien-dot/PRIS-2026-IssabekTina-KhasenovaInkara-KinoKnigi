@@ -1,43 +1,56 @@
 import json
 import os
 
-# Автоматически находим путь к папке проекта
-# __file__ - это путь к текущему файлу (logic.py)
-# dirname(__file__) - это папка src
-# dirname(dirname(...)) - это корень проекта
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-
-# Формируем путь к rules.json так, чтобы он работал у всех
 RULES_PATH = os.path.join(BASE_DIR, 'data', 'raw', 'rules.json')
 
 def load_rules():
-    # Проверяем, существует ли файл вообще, прежде чем открывать
     if not os.path.exists(RULES_PATH):
-        raise FileNotFoundError(f"Файл не найден по пути: {RULES_PATH}. Проверь, что папка 'data/raw' существует!")
-        
+        return {
+            "scenario_name": "Default",
+            "thresholds": {"min_rating": 1.0, "max_rating": 10.0},
+            "lists": {"blacklist": []}
+        }
     with open(RULES_PATH, 'r', encoding='utf-8') as f:
         return json.load(f)
 
-def check_rules(data):
-    try:
-        rules = load_rules()
-    except Exception as e:
-        return f"❌ Ошибка загрузки правил: {str(e)}"
+def check_rules(movie_dict):
+    """Проверяет один фильм на соответствие правилам"""
+    rules = load_rules()
     
-    # --- Hard Filter: проверка доступности ---
-    if rules['critical_rules']['must_be_available'] and not data['is_available']:
-        return "⛔️ Критическая ошибка: Объект недоступен"
+    rating = movie_dict.get('imdb_score', 0)
+    if rating < rules['thresholds']['min_rating']:
+        return f"Рейтинг ({rating}) ниже допустимого"
+    
+    movie_genres = movie_dict.get('genres', [])
+    for genre in movie_genres:
+        if genre in rules['lists']['blacklist']:
+            return f"Жанр '{genre}' запрещен правилами"
+    
+    return "Соответствует"
 
-    # --- Проверка рейтинга ---
-    if data['rating_value'] < rules['thresholds']['min_rating']:
-        return f"❌ Отказ: Рейтинг ({data['rating_value']}) ниже порога"
+def process_text_message(text, graph, movies_list):
+    """Анализирует запрос пользователя и ищет ответ"""
+    query = text.lower().strip()
     
-    if data['rating_value'] > rules['thresholds']['max_rating']:
-        return f"❌ Отказ: Рейтинг ({data['rating_value']}) выше порога"
+    if query in ["привет", "старт", "hi", "hello"]:
+        return ("Салем! Я твой киносоветчик. 🎬\n\n"
+                "Ты можешь:\n"
+                "Написать жанр (например: 'Drama')\n"
+                "Написать год (например: '1995')\n"
+                "Написать слово из сюжета (например: 'adventure')")
 
-    # --- Проверка тегов (Blacklist) ---
-    for tag in data['tags_list']:
-        if tag in rules['lists']['blacklist']:
-            return f"⚠️ Предупреждение: Запрещенный тег ({tag})"
+    for node in graph.nodes:
+        if query == node.lower():
+            neighbors = list(graph.neighbors(node))
+            return f"В базе знаний '{node}' найден в фильмах: {', '.join(neighbors[:7])}"
+
+    found_titles = []
+    for m in movies_list:
+        if query in m['description'].lower() or query in m['title'].lower():
+            found_titles.append(m['title'])
     
-    return f"✅ Успех: Соответствует сценарию '{rules['scenario_name']}'"
+    if found_titles:
+        return f"По вашему описанию подобрал: {', '.join(found_titles[:5])}"
+
+    return "Не совсем понял. Попробуй ввести жанр, год или ключевое слово (например, 'Animation')."
