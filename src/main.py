@@ -5,6 +5,8 @@ from logic import check_rules
 import networkx as nx
 import matplotlib.pyplot as plt
 
+from knowledge_graph import create_graph, find_related_entities
+
 st.set_page_config(page_title="Movie Advisor", page_icon="🎬")
 st.title("Movie Rule-Based System 🎬")
 st.write("**Текущий сценарий:** Проверка по правилам проекта")
@@ -67,20 +69,10 @@ with st.expander("Посмотреть структуру данных для а
     }
     st.json(debug_data)
 
-
-# Knowledge Graph 
-
 st.divider()
 st.header("Knowledge Graph: Связи фильма 🎞️🕸")
 
-G = nx.Graph()
-
-# добавляем фильмы и жанры как узлы
-for movie in movies_data:
-    G.add_node(movie["title"], type="movie")
-    for genre in movie["genres"]:
-        G.add_node(genre, type="genre")
-        G.add_edge(movie["title"], genre)
+G = create_graph()
 
 all_nodes = list(G.nodes())
 selected_node = st.selectbox(
@@ -89,7 +81,7 @@ selected_node = st.selectbox(
 )
 
 if st.button("Показать связи в графе"):
-    neighbors = list(G.neighbors(selected_node))
+    neighbors = find_related_entities(G, selected_node)
     if neighbors:
         st.success(f"Объект **{selected_node}** связан с: {', '.join(neighbors)}")
     else:
@@ -100,12 +92,20 @@ st.write("### Визуализация графа знаний")
 fig, ax = plt.subplots(figsize=(9, 6))
 pos = nx.spring_layout(G, seed=42)
 
+# цвета узлов
 node_colors = []
-for node in G.nodes(data=True):
-    if node[1].get("type") == "movie":
+for node, data in G.nodes(data=True):
+    n_type = data.get("type", "unknown")
+    if n_type == "movie":
         node_colors.append("lightgreen")
-    else:
+    elif n_type == "genre":
         node_colors.append("lightblue")
+    elif n_type == "actor":
+        node_colors.append("pink")
+    elif n_type == "director":
+        node_colors.append("gold")
+    else:
+        node_colors.append("gray")
 
 nx.draw(
     G,
