@@ -4,3 +4,4 @@ notebook
 opencv-python-headless
 networkx
 matplotlib
+pyvis
