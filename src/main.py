@@ -1,121 +1,82 @@
 import streamlit as st
-from mock_data import movies_data
-from logic import check_rules      
-
 import networkx as nx
-import matplotlib.pyplot as plt
+from pyvis.network import Network
+import streamlit.components.v1 as components
+import os
 
-from knowledge_graph import create_graph, find_related_entities
+from mock_data import movies_data
+from knowledge_graph import create_graph
+from logic import check_rules, process_text_message
 
-st.set_page_config(page_title="Movie Advisor", page_icon="🎬")
-st.title("Movie Rule-Based System 🎬")
-st.write("**Текущий сценарий:** Проверка по правилам проекта")
+st.set_page_config(page_title="Movie Management System", layout="wide")
 
-st.sidebar.header("Входные данные фильма")
+if 'graph' not in st.session_state:
+    st.session_state.graph = create_graph()
+if 'movies' not in st.session_state:
+    st.session_state.movies = movies_data
+if 'messages' not in st.session_state:
+    st.session_state.messages = []
 
-selected_movie_title = st.sidebar.selectbox(
-    "Выберите фильм",
-    options=[m["title"] for m in movies_data]
-)
-
-default_data = next(m for m in movies_data if m["title"] == selected_movie_title)
-
-title = st.sidebar.text_input("Название фильма:", value=default_data["title"])
-imdb_score = st.sidebar.number_input(
-    "IMDB Score:", 
-    min_value=0.0, 
-    max_value=10.0, 
-    value=float(default_data["imdb_score"]),
-    step=0.1
-)
-is_available = st.sidebar.checkbox("Доступность (Available)", value=default_data["is_available"])
-sentiment = st.sidebar.selectbox(
-    "Настроение отзывов:", 
-    options=["positive", "negative"], 
-    index=0 if default_data["review_sentiment"] == "positive" else 1
-)
-genres_input = st.sidebar.text_input(
-    "Жанры (через запятую):", 
-    value=", ".join(default_data["genres"])
-)
-genres = [g.strip() for g in genres_input.split(",") if g.strip()]
-
-if st.button("Запустить анализ по правилам"):
-    current_movie_data = {
-        "title": title,
-        "rating_value": imdb_score,  
-        "is_available": is_available,
-        "review_sentiment": sentiment,
-        "tags_list": genres          
-    }
+with st.sidebar:
+    st.header("📥 Входные данные фильма")
     
-    result = check_rules(current_movie_data)
+    movie_titles = [m['title'] for m in st.session_state.movies]
+    selected_name = st.selectbox("Выберите фильм", movie_titles)
     
-    if "✅" in result:
-        st.success(result)
-        st.balloons() 
-    elif "⛔️" in result:
-        st.error(result)
-    else:
-        st.warning(result)
+    current_movie = next(m for m in st.session_state.movies if m['title'] == selected_name)
+    
+    st.text_input("Название фильма:", value=current_movie['title'])
+    st.number_input("IMDB Score:", value=float(current_movie['imdb_score']), step=0.1)
+    st.checkbox("Доступность (Available)", value=True)
+    st.selectbox("Настроение отзывов:", ["positive", "neutral", "negative"])
+    st.text_input("Жанры (через запятую):", value=", ".join(current_movie['genres']))
+    
+    st.button("Обновить данные")
+    
+    st.divider()
+    st.header("⚙️ Валидация")
+    if st.button("Проверить по правилам"):
+        res = check_rules(current_movie)
+        st.info(f"Результат: {res}")
 
-with st.expander("Посмотреть структуру данных для анализа"):
-    debug_data = {
-        "title": title,
-        "rating_value": imdb_score,
-        "is_available": is_available,
-        "review_sentiment": sentiment,
-        "tags_list": genres
-    }
-    st.json(debug_data)
+st.title("🎬 Movie Advisor System v2.0")
 
-st.divider()
-st.header("Knowledge Graph: Связи фильма 🎞️🕸")
+col1, col2 = st.columns([1, 1])
 
-G = create_graph()
+with col1:
+    st.subheader("🕸 Граф знаний")
+    net = Network(height="400px", width="100%", bgcolor="#f0f2f6", font_color="black")
+    net.from_nx(st.session_state.graph)
+    
+    path = "graph_display.html"
+    net.save_graph(path)
+    with open(path, 'r', encoding='utf-8') as f:
+        html_data = f.read()
+    components.html(html_data, height=450)
 
-all_nodes = list(G.nodes())
-selected_node = st.selectbox(
-    "Выберите объект для анализа связей:",
-    options=all_nodes
-)
+with col2:
+    st.subheader("💬 Чат-бот консультант")
+    
+    chat_container = st.container(height=380)
+    with chat_container:
+        for message in st.session_state.messages:
+            with st.chat_message(message["role"]):
+                st.markdown(message["content"])
+                if "poster" in message and message["poster"]:
+                    st.image(message["poster"], width=100)
 
-if st.button("Показать связи в графе"):
-    neighbors = find_related_entities(G, selected_node)
-    if neighbors:
-        st.success(f"Объект **{selected_node}** связан с: {', '.join(neighbors)}")
-    else:
-        st.warning("Связи не найдены")
+    if user_input := st.chat_input("Спроси про жанр или год..."):
+        st.session_state.messages.append({"role": "user", "content": user_input})
+        
+        answer = process_text_message(user_input, st.session_state.graph, st.session_state.movies)
+        
+        poster_url = None
+        for m in st.session_state.movies:
+            if m['title'].lower() in answer.lower():
+                poster_url = m['poster']
+                break
+        
+        st.session_state.messages.append({"role": "assistant", "content": answer, "poster": poster_url})
+        st.rerun()
 
-st.write("### Визуализация графа знаний")
-
-fig, ax = plt.subplots(figsize=(9, 6))
-pos = nx.spring_layout(G, seed=42)
-
-# цвета узлов
-node_colors = []
-for node, data in G.nodes(data=True):
-    n_type = data.get("type", "unknown")
-    if n_type == "movie":
-        node_colors.append("lightgreen")
-    elif n_type == "genre":
-        node_colors.append("lightblue")
-    elif n_type == "actor":
-        node_colors.append("pink")
-    elif n_type == "director":
-        node_colors.append("gold")
-    else:
-        node_colors.append("gray")
-
-nx.draw(
-    G,
-    pos,
-    with_labels=True,
-    node_color=node_colors,
-    edge_color="gray",
-    node_size=1800,
-    font_size=9,
-    ax=ax
-)
-
-st.pyplot(fig)
+st.caption("Разработано в рамках лабораторной работы PRIS-2026")
