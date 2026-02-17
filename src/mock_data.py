@@ -1,39 +1,46 @@
-# Mock Data для Rule-Based фильтра фильмов
+import pandas as pd
+import os
+import re
 
-movies_data = [
-    {
-        "title": "Toy Story (1995)",
-        "imdb_score": 8.3,
-        "genres": ["Animation", "Adventure", "Comedy"],
-        "review_sentiment": "positive",
-        "is_available": True
-    },
-    {
-        "title": "Jumanji (1995)",
-        "imdb_score": 6.9,
-        "genres": ["Action", "Adventure", "Family"],
-        "review_sentiment": "positive",
-        "is_available": True
-    },
-    {
-        "title": "Grumpier Old Men (1995)",
-        "imdb_score": 6.6,
-        "genres": ["Comedy", "Romance"],
-        "review_sentiment": "positive",
-        "is_available": True
-    },
-    {
-        "title": "Waiting to Exhale (1995)",
-        "imdb_score": 5.7,
-        "genres": ["Comedy", "Drama", "Romance"],
-        "review_sentiment": "negative",
-        "is_available": True
-    },
-    {
-        "title": "Heat (1995)",
-        "imdb_score": 8.2,
-        "genres": ["Action", "Crime", "Drama"],
-        "review_sentiment": "positive",
-        "is_available": True
-    }
-]
+def load_clean_data():
+    current_dir = os.path.dirname(__file__)
+    file_path = os.path.join(current_dir, '..', 'data', 'raw', 'MovieGenre.csv')
+    
+    try:
+        df = pd.read_csv(file_path, encoding='latin-1')
+        
+        df = df.dropna(subset=['Title', 'Genre', 'IMDB Score'])
+        
+        df = df.head(60)
+        
+        movies = []
+        for _, row in df.iterrows():
+            raw_title = str(row['Title'])
+            
+            year_match = re.search(r'\((\d{4})\)', raw_title)
+            year = year_match.group(1) if year_match else "Unknown"
+            
+            clean_title = re.sub(r'\(\d{4}\)', '', raw_title).strip()
+            
+            genres = str(row['Genre']).split('|')
+            rating = row['IMDB Score']
+            
+            description = (f"This {', '.join(genres)} film was released in {year}. "
+                           f"It is titled {clean_title} and has an IMDB rating of {rating}.")
+            
+            movies.append({
+                "title": clean_title,
+                "year": year,
+                "imdb_score": float(rating),
+                "genres": genres,
+                "description": description,
+                "poster": str(row.get('Poster', ''))
+            })
+            
+        return movies
+
+    except Exception as e:
+        print(f"⚠️ Ошибка загрузки датасета: {e}")
+        return []
+
+movies_data = load_clean_data()
