@@ -1,6 +1,6 @@
 import networkx as nx
-from src.models import Movie
-from src.mock_data import movies_data
+from models import Movie
+from mock_data import movies_data
 
 def create_graph():
     G = nx.Graph()
