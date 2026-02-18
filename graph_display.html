@@ -1,0 +1,155 @@
+<html>
+    <head>
+        <meta charset="utf-8">
+        
+            <script src="lib/bindings/utils.js"></script>
+            <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/dist/vis-network.min.css" integrity="sha512-WgxfT5LWjfszlPHXRmBWHkV2eceiWTOBvrKCNbdgDYTHrT2AeLCGbF4sZlZw3UMN3WtL0tGUoIAKsu8mllg/XA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/vis-network/9.1.2/dist/vis-network.min.js" integrity="sha512-LnvoEWDFrqGHlHmDD2101OrLcbsfkrzoSpvtSQtxK3RMnRV0eOkhhBN2dXHKRrUU8p2DGRTk35n4O8nWSVe1mQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+            
+        
+<center>
+<h1></h1>
+</center>
+
+<!-- <link rel="stylesheet" href="../node_modules/vis/dist/vis.min.css" type="text/css" />
+<script type="text/javascript" src="../node_modules/vis/dist/vis.js"> </script>-->
+        <link
+          href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/css/bootstrap.min.css"
+          rel="stylesheet"
+          integrity="sha384-eOJMYsd53ii+scO/bJGFsiCZc+5NDVN2yr8+0RDqr0Ql0h+rP48ckxlpbzKgwra6"
+          crossorigin="anonymous"
+        />
+        <script
+          src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta3/dist/js/bootstrap.bundle.min.js"
+          integrity="sha384-JEW9xMcG8R+pH31jmWH6WWP0WintQrMb4s7ZOdauHnUtxwoG2vI5DkLtS3qm9Ekf"
+          crossorigin="anonymous"
+        ></script>
+
+
+        <center>
+          <h1></h1>
+        </center>
+        <style type="text/css">
+
+             #mynetwork {
+                 width: 100%;
+                 height: 400px;
+                 background-color: #f0f2f6;
+                 border: 1px solid lightgray;
+                 position: relative;
+                 float: left;
+             }
+
+             
+
+             
+
+             
+        </style>
+    </head>
+
+
+    <body>
+        <div class="card" style="width: 100%">
+            
+            
+            <div id="mynetwork" class="card-body"></div>
+        </div>
+
+        
+        
+
+        <script type="text/javascript">
+
+              // initialize global variables.
+              var edges;
+              var nodes;
+              var allNodes;
+              var allEdges;
+              var nodeColors;
+              var originalNodes;
+              var network;
+              var container;
+              var options, data;
+              var filter = {
+                  item : '',
+                  property : '',
+                  value : []
+              };
+
+              
+
+              
+
+              // This method is responsible for drawing the graph, returns the drawn network
+              function drawGraph() {
+                  var container = document.getElementById('mynetwork');
+
+                  
+
+                  // parsing and collecting nodes and edges from the python
+                  nodes = new vis.DataSet([{"color": "#97c2fc", "font": {"color": "black"}, "id": "Toy Story", "label": "Toy Story", "rating": 8.3, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Animation", "label": "Animation", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Adventure", "label": "Adventure", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Comedy", "label": "Comedy", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "1995", "label": "1995", "shape": "dot", "size": 10, "type": "year"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Balto", "label": "Balto", "rating": 7.1, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Pocahontas", "label": "Pocahontas", "rating": 6.7, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Jumanji", "label": "Jumanji", "rating": 6.9, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Tom and Huck", "label": "Tom and Huck", "rating": 5.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "GoldenEye", "label": "GoldenEye", "rating": 7.2, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Cutthroat Island", "label": "Cutthroat Island", "rating": 5.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Ace Ventura: When Nature Calls", "label": "Ace Ventura: When Nature Calls", "rating": 6.3, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Wings of Courage", "label": "Wings of Courage", "rating": 6.5, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Across the Sea of Time", "label": "Across the Sea of Time", "rating": 6.4, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Mortal Kombat", "label": "Mortal Kombat", "rating": 5.8, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Kids of the Round Table", "label": "Kids of the Round Table", "rating": 5.0, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Grumpier Old Men", "label": "Grumpier Old Men", "rating": 6.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Waiting to Exhale", "label": "Waiting to Exhale", "rating": 5.7, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Father of the Bride Part II", "label": "Father of the Bride Part II", "rating": 5.9, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Sabrina", "label": "Sabrina", "rating": 6.3, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "The American President", "label": "The American President", "rating": 6.8, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Dracula: Dead and Loving It", "label": "Dracula: Dead and Loving It", "rating": 5.8, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Four Rooms", "label": "Four Rooms", "rating": 6.7, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Money Train", "label": "Money Train", "rating": 5.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Get Shorty", "label": "Get Shorty", "rating": 6.9, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Now and Then", "label": "Now and Then", "rating": 6.8, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Babe", "label": "Babe", "rating": 6.8, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "It Takes Two", "label": "It Takes Two", "rating": 5.7, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Clueless", "label": "Clueless", "rating": 6.8, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "To Die For", "label": "To Die For", "rating": 6.8, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "How to Make an American Quilt", "label": "How to Make an American Quilt", "rating": 6.2, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Mighty Aphrodite", "label": "Mighty Aphrodite", "rating": 7.1, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "The Big Green", "label": "The Big Green", "rating": 5.5, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Home for the Holidays", "label": "Home for the Holidays", "rating": 6.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Il Postino: The Postman", "label": "Il Postino: The Postman", "rating": 7.7, "shape": "dot", "size": 10, "type": "movie", "year": "1994"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Heat", "label": "Heat", "rating": 8.2, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Sudden Death", "label": "Sudden Death", "rating": 5.7, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Nixon", "label": "Nixon", "rating": 7.1, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Casino", "label": "Casino", "rating": 8.2, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Sense and Sensibility", "label": "Sense and Sensibility", "rating": 7.7, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Copycat", "label": "Copycat", "rating": 6.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Assassins", "label": "Assassins", "rating": 6.3, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Powder", "label": "Powder", "rating": 6.5, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Leaving Las Vegas", "label": "Leaving Las Vegas", "rating": 7.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Othello", "label": "Othello", "rating": 6.9, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "The City of Lost Children", "label": "The City of Lost Children", "rating": 7.7, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Yao a yao, yao dao wai po qiao", "label": "Yao a yao, yao dao wai po qiao", "rating": 7.2, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Dangerous Minds", "label": "Dangerous Minds", "rating": 6.4, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Twelve Monkeys", "label": "Twelve Monkeys", "rating": 8.0, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Carrington", "label": "Carrington", "rating": 6.9, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Dead Man Walking", "label": "Dead Man Walking", "rating": 7.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Cry, the Beloved Country", "label": "Cry, the Beloved Country", "rating": 6.9, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Richard III", "label": "Richard III", "rating": 7.5, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Dead Presidents", "label": "Dead Presidents", "rating": 6.8, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Restoration", "label": "Restoration", "rating": 6.7, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Se7en", "label": "Se7en", "rating": 8.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "When Night Is Falling", "label": "When Night Is Falling", "rating": 6.7, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "The Usual Suspects", "label": "The Usual Suspects", "rating": 8.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Georgia", "label": "Georgia", "rating": 6.5, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Le confessionnal", "label": "Le confessionnal", "rating": 7.6, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "The Indian in the Cupboard", "label": "The Indian in the Cupboard", "rating": 5.9, "shape": "dot", "size": 10, "type": "movie", "year": "1995"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Action", "label": "Action", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Family", "label": "Family", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Guardian Angel", "label": "Guardian Angel", "rating": 4.8, "shape": "dot", "size": 10, "type": "movie", "year": "1994"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Romance", "label": "Romance", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Drama", "label": "Drama", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Persuasion", "label": "Persuasion", "rating": 7.7, "shape": "dot", "size": 10, "type": "movie", "year": "Unknown"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Lamerica", "label": "Lamerica", "rating": 7.6, "shape": "dot", "size": 10, "type": "movie", "year": "1994"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Crime", "label": "Crime", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Thriller", "label": "Thriller", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Fantasy", "label": "Fantasy", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Horror", "label": "Horror", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Biography", "label": "Biography", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "History", "label": "History", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Mystery", "label": "Mystery", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Sci-Fi", "label": "Sci-Fi", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "War", "label": "War", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "1994", "label": "1994", "shape": "dot", "size": 10, "type": "year"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Sport", "label": "Sport", "shape": "dot", "size": 10, "type": "genre"}, {"color": "#97c2fc", "font": {"color": "black"}, "id": "Music", "label": "Music", "shape": "dot", "size": 10, "type": "genre"}]);
+                  edges = new vis.DataSet([{"from": "Toy Story", "to": "Animation", "width": 1}, {"from": "Toy Story", "to": "Adventure", "width": 1}, {"from": "Toy Story", "to": "Comedy", "width": 1}, {"from": "Toy Story", "to": "1995", "width": 1}, {"from": "Animation", "to": "Balto", "width": 1}, {"from": "Animation", "to": "Pocahontas", "width": 1}, {"from": "Adventure", "to": "Jumanji", "width": 1}, {"from": "Adventure", "to": "Tom and Huck", "width": 1}, {"from": "Adventure", "to": "GoldenEye", "width": 1}, {"from": "Adventure", "to": "Balto", "width": 1}, {"from": "Adventure", "to": "Cutthroat Island", "width": 1}, {"from": "Adventure", "to": "Ace Ventura: When Nature Calls", "width": 1}, {"from": "Adventure", "to": "Wings of Courage", "width": 1}, {"from": "Adventure", "to": "Across the Sea of Time", "width": 1}, {"from": "Adventure", "to": "Mortal Kombat", "width": 1}, {"from": "Adventure", "to": "Pocahontas", "width": 1}, {"from": "Adventure", "to": "Kids of the Round Table", "width": 1}, {"from": "Comedy", "to": "Grumpier Old Men", "width": 1}, {"from": "Comedy", "to": "Waiting to Exhale", "width": 1}, {"from": "Comedy", "to": "Father of the Bride Part II", "width": 1}, {"from": "Comedy", "to": "Sabrina", "width": 1}, {"from": "Comedy", "to": "Tom and Huck", "width": 1}, {"from": "Comedy", "to": "The American President", "width": 1}, {"from": "Comedy", "to": "Dracula: Dead and Loving It", "width": 1}, {"from": "Comedy", "to": "Cutthroat Island", "width": 1}, {"from": "Comedy", "to": "Four Rooms", "width": 1}, {"from": "Comedy", "to": "Ace Ventura: When Nature Calls", "width": 1}, {"from": "Comedy", "to": "Money Train", "width": 1}, {"from": "Comedy", "to": "Get Shorty", "width": 1}, {"from": "Comedy", "to": "Now and Then", "width": 1}, {"from": "Comedy", "to": "Babe", "width": 1}, {"from": "Comedy", "to": "It Takes Two", "width": 1}, {"from": "Comedy", "to": "Clueless", "width": 1}, {"from": "Comedy", "to": "To Die For", "width": 1}, {"from": "Comedy", "to": "How to Make an American Quilt", "width": 1}, {"from": "Comedy", "to": "Mighty Aphrodite", "width": 1}, {"from": "Comedy", "to": "The Big Green", "width": 1}, {"from": "Comedy", "to": "Kids of the Round Table", "width": 1}, {"from": "Comedy", "to": "Home for the Holidays", "width": 1}, {"from": "Comedy", "to": "Il Postino: The Postman", "width": 1}, {"from": "1995", "to": "Jumanji", "width": 1}, {"from": "1995", "to": "Grumpier Old Men", "width": 1}, {"from": "1995", "to": "Waiting to Exhale", "width": 1}, {"from": "1995", "to": "Father of the Bride Part II", "width": 1}, {"from": "1995", "to": "Heat", "width": 1}, {"from": "1995", "to": "Sabrina", "width": 1}, {"from": "1995", "to": "Tom and Huck", "width": 1}, {"from": "1995", "to": "Sudden Death", "width": 1}, {"from": "1995", "to": "GoldenEye", "width": 1}, {"from": "1995", "to": "The American President", "width": 1}, {"from": "1995", "to": "Dracula: Dead and Loving It", "width": 1}, {"from": "1995", "to": "Balto", "width": 1}, {"from": "1995", "to": "Nixon", "width": 1}, {"from": "1995", "to": "Cutthroat Island", "width": 1}, {"from": "1995", "to": "Casino", "width": 1}, {"from": "1995", "to": "Sense and Sensibility", "width": 1}, {"from": "1995", "to": "Four Rooms", "width": 1}, {"from": "1995", "to": "Ace Ventura: When Nature Calls", "width": 1}, {"from": "1995", "to": "Money Train", "width": 1}, {"from": "1995", "to": "Get Shorty", "width": 1}, {"from": "1995", "to": "Copycat", "width": 1}, {"from": "1995", "to": "Assassins", "width": 1}, {"from": "1995", "to": "Powder", "width": 1}, {"from": "1995", "to": "Leaving Las Vegas", "width": 1}, {"from": "1995", "to": "Othello", "width": 1}, {"from": "1995", "to": "Now and Then", "width": 1}, {"from": "1995", "to": "The City of Lost Children", "width": 1}, {"from": "1995", "to": "Yao a yao, yao dao wai po qiao", "width": 1}, {"from": "1995", "to": "Dangerous Minds", "width": 1}, {"from": "1995", "to": "Twelve Monkeys", "width": 1}, {"from": "1995", "to": "Wings of Courage", "width": 1}, {"from": "1995", "to": "Babe", "width": 1}, {"from": "1995", "to": "Carrington", "width": 1}, {"from": "1995", "to": "Dead Man Walking", "width": 1}, {"from": "1995", "to": "Across the Sea of Time", "width": 1}, {"from": "1995", "to": "It Takes Two", "width": 1}, {"from": "1995", "to": "Clueless", "width": 1}, {"from": "1995", "to": "Cry, the Beloved Country", "width": 1}, {"from": "1995", "to": "Richard III", "width": 1}, {"from": "1995", "to": "Dead Presidents", "width": 1}, {"from": "1995", "to": "Restoration", "width": 1}, {"from": "1995", "to": "Mortal Kombat", "width": 1}, {"from": "1995", "to": "To Die For", "width": 1}, {"from": "1995", "to": "How to Make an American Quilt", "width": 1}, {"from": "1995", "to": "Se7en", "width": 1}, {"from": "1995", "to": "Pocahontas", "width": 1}, {"from": "1995", "to": "When Night Is Falling", "width": 1}, {"from": "1995", "to": "The Usual Suspects", "width": 1}, {"from": "1995", "to": "Mighty Aphrodite", "width": 1}, {"from": "1995", "to": "The Big Green", "width": 1}, {"from": "1995", "to": "Georgia", "width": 1}, {"from": "1995", "to": "Kids of the Round Table", "width": 1}, {"from": "1995", "to": "Home for the Holidays", "width": 1}, {"from": "1995", "to": "Le confessionnal", "width": 1}, {"from": "1995", "to": "The Indian in the Cupboard", "width": 1}, {"from": "Jumanji", "to": "Action", "width": 1}, {"from": "Jumanji", "to": "Family", "width": 1}, {"from": "Action", "to": "Heat", "width": 1}, {"from": "Action", "to": "Sudden Death", "width": 1}, {"from": "Action", "to": "GoldenEye", "width": 1}, {"from": "Action", "to": "Cutthroat Island", "width": 1}, {"from": "Action", "to": "Money Train", "width": 1}, {"from": "Action", "to": "Assassins", "width": 1}, {"from": "Action", "to": "Dead Presidents", "width": 1}, {"from": "Action", "to": "Mortal Kombat", "width": 1}, {"from": "Action", "to": "Guardian Angel", "width": 1}, {"from": "Family", "to": "Father of the Bride Part II", "width": 1}, {"from": "Family", "to": "Babe", "width": 1}, {"from": "Family", "to": "Across the Sea of Time", "width": 1}, {"from": "Family", "to": "It Takes Two", "width": 1}, {"from": "Family", "to": "The Big Green", "width": 1}, {"from": "Family", "to": "Kids of the Round Table", "width": 1}, {"from": "Family", "to": "The Indian in the Cupboard", "width": 1}, {"from": "Grumpier Old Men", "to": "Romance", "width": 1}, {"from": "Romance", "to": "Waiting to Exhale", "width": 1}, {"from": "Romance", "to": "Father of the Bride Part II", "width": 1}, {"from": "Romance", "to": "The American President", "width": 1}, {"from": "Romance", "to": "Sense and Sensibility", "width": 1}, {"from": "Romance", "to": "Leaving Las Vegas", "width": 1}, {"from": "Romance", "to": "Othello", "width": 1}, {"from": "Romance", "to": "Now and Then", "width": 1}, {"from": "Romance", "to": "Yao a yao, yao dao wai po qiao", "width": 1}, {"from": "Romance", "to": "Wings of Courage", "width": 1}, {"from": "Romance", "to": "Carrington", "width": 1}, {"from": "Romance", "to": "It Takes Two", "width": 1}, {"from": "Romance", "to": "Clueless", "width": 1}, {"from": "Romance", "to": "How to Make an American Quilt", "width": 1}, {"from": "Romance", "to": "When Night Is Falling", "width": 1}, {"from": "Romance", "to": "Mighty Aphrodite", "width": 1}, {"from": "Romance", "to": "Home for the Holidays", "width": 1}, {"from": "Waiting to Exhale", "to": "Drama", "width": 1}, {"from": "Drama", "to": "Heat", "width": 1}, {"from": "Drama", "to": "Sabrina", "width": 1}, {"from": "Drama", "to": "Tom and Huck", "width": 1}, {"from": "Drama", "to": "The American President", "width": 1}, {"from": "Drama", "to": "Balto", "width": 1}, {"from": "Drama", "to": "Nixon", "width": 1}, {"from": "Drama", "to": "Casino", "width": 1}, {"from": "Drama", "to": "Sense and Sensibility", "width": 1}, {"from": "Drama", "to": "Copycat", "width": 1}, {"from": "Drama", "to": "Powder", "width": 1}, {"from": "Drama", "to": "Leaving Las Vegas", "width": 1}, {"from": "Drama", "to": "Othello", "width": 1}, {"from": "Drama", "to": "Now and Then", "width": 1}, {"from": "Drama", "to": "Persuasion", "width": 1}, {"from": "Drama", "to": "Yao a yao, yao dao wai po qiao", "width": 1}, {"from": "Drama", "to": "Dangerous Minds", "width": 1}, {"from": "Drama", "to": "Babe", "width": 1}, {"from": "Drama", "to": "Carrington", "width": 1}, {"from": "Drama", "to": "Dead Man Walking", "width": 1}, {"from": "Drama", "to": "Across the Sea of Time", "width": 1}, {"from": "Drama", "to": "Cry, the Beloved Country", "width": 1}, {"from": "Drama", "to": "Richard III", "width": 1}, {"from": "Drama", "to": "Dead Presidents", "width": 1}, {"from": "Drama", "to": "Restoration", "width": 1}, {"from": "Drama", "to": "To Die For", "width": 1}, {"from": "Drama", "to": "How to Make an American Quilt", "width": 1}, {"from": "Drama", "to": "Se7en", "width": 1}, {"from": "Drama", "to": "Pocahontas", "width": 1}, {"from": "Drama", "to": "When Night Is Falling", "width": 1}, {"from": "Drama", "to": "The Usual Suspects", "width": 1}, {"from": "Drama", "to": "Guardian Angel", "width": 1}, {"from": "Drama", "to": "Lamerica", "width": 1}, {"from": "Drama", "to": "Georgia", "width": 1}, {"from": "Drama", "to": "Home for the Holidays", "width": 1}, {"from": "Drama", "to": "Il Postino: The Postman", "width": 1}, {"from": "Drama", "to": "Le confessionnal", "width": 1}, {"from": "Drama", "to": "The Indian in the Cupboard", "width": 1}, {"from": "Heat", "to": "Crime", "width": 1}, {"from": "Crime", "to": "Sudden Death", "width": 1}, {"from": "Crime", "to": "Casino", "width": 1}, {"from": "Crime", "to": "Ace Ventura: When Nature Calls", "width": 1}, {"from": "Crime", "to": "Money Train", "width": 1}, {"from": "Crime", "to": "Get Shorty", "width": 1}, {"from": "Crime", "to": "Copycat", "width": 1}, {"from": "Crime", "to": "Assassins", "width": 1}, {"from": "Crime", "to": "Yao a yao, yao dao wai po qiao", "width": 1}, {"from": "Crime", "to": "Dead Man Walking", "width": 1}, {"from": "Crime", "to": "Dead Presidents", "width": 1}, {"from": "Crime", "to": "To Die For", "width": 1}, {"from": "Crime", "to": "Se7en", "width": 1}, {"from": "Crime", "to": "The Usual Suspects", "width": 1}, {"from": "Sudden Death", "to": "Thriller", "width": 1}, {"from": "Thriller", "to": "GoldenEye", "width": 1}, {"from": "Thriller", "to": "Get Shorty", "width": 1}, {"from": "Thriller", "to": "Assassins", "width": 1}, {"from": "Thriller", "to": "Twelve Monkeys", "width": 1}, {"from": "Thriller", "to": "Cry, the Beloved Country", "width": 1}, {"from": "Thriller", "to": "Guardian Angel", "width": 1}, {"from": "Thriller", "to": "Le confessionnal", "width": 1}, {"from": "Dracula: Dead and Loving It", "to": "Fantasy", "width": 1}, {"from": "Dracula: Dead and Loving It", "to": "Horror", "width": 1}, {"from": "Fantasy", "to": "Powder", "width": 1}, {"from": "Fantasy", "to": "The City of Lost Children", "width": 1}, {"from": "Fantasy", "to": "Mortal Kombat", "width": 1}, {"from": "Fantasy", "to": "Mighty Aphrodite", "width": 1}, {"from": "Fantasy", "to": "The Indian in the Cupboard", "width": 1}, {"from": "Nixon", "to": "Biography", "width": 1}, {"from": "Nixon", "to": "History", "width": 1}, {"from": "Biography", "to": "Dangerous Minds", "width": 1}, {"from": "Biography", "to": "Carrington", "width": 1}, {"from": "Biography", "to": "Restoration", "width": 1}, {"from": "Biography", "to": "Il Postino: The Postman", "width": 1}, {"from": "History", "to": "Restoration", "width": 1}, {"from": "Copycat", "to": "Mystery", "width": 1}, {"from": "Mystery", "to": "Powder", "width": 1}, {"from": "Mystery", "to": "Twelve Monkeys", "width": 1}, {"from": "Mystery", "to": "Se7en", "width": 1}, {"from": "Mystery", "to": "The Usual Suspects", "width": 1}, {"from": "Mystery", "to": "Le confessionnal", "width": 1}, {"from": "The City of Lost Children", "to": "Sci-Fi", "width": 1}, {"from": "Sci-Fi", "to": "Twelve Monkeys", "width": 1}, {"from": "Richard III", "to": "War", "width": 1}, {"from": "Guardian Angel", "to": "1994", "width": 1}, {"from": "1994", "to": "Lamerica", "width": 1}, {"from": "1994", "to": "Il Postino: The Postman", "width": 1}, {"from": "The Big Green", "to": "Sport", "width": 1}, {"from": "Georgia", "to": "Music", "width": 1}]);
+
+                  nodeColors = {};
+                  allNodes = nodes.get({ returnType: "Object" });
+                  for (nodeId in allNodes) {
+                    nodeColors[nodeId] = allNodes[nodeId].color;
+                  }
+                  allEdges = edges.get({ returnType: "Object" });
+                  // adding nodes and edges to the graph
+                  data = {nodes: nodes, edges: edges};
+
+                  var options = {
+    "configure": {
+        "enabled": false
+    },
+    "edges": {
+        "color": {
+            "inherit": true
+        },
+        "smooth": {
+            "enabled": true,
+            "type": "dynamic"
+        }
+    },
+    "interaction": {
+        "dragNodes": true,
+        "hideEdgesOnDrag": false,
+        "hideNodesOnDrag": false
+    },
+    "physics": {
+        "enabled": true,
+        "stabilization": {
+            "enabled": true,
+            "fit": true,
+            "iterations": 1000,
+            "onlyDynamicEdges": false,
+            "updateInterval": 50
+        }
+    }
+};
+
+                  
+
+
+                  
+
+                  network = new vis.Network(container, data, options);
+
+                  
+
+                  
+
+                  
+
+
+                  
+
+                  return network;
+
+              }
+              drawGraph();
+        </script>
+    </body>
+</html>
