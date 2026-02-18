@@ -8,17 +8,26 @@ def load_clean_data():
     
     try:
         df = pd.read_csv(file_path, encoding='latin-1')
-        
         df = df.dropna(subset=['Title', 'Genre', 'IMDB Score'])
         
-        df = df.head(60)
+        # вытаскиваем год из столбца тайтл
+        def get_year_from_title(title_string):
+            match = re.search(r'\((\d{4})\)', str(title_string))
+            if match:
+                return int(match.group(1)) 
+            return 0 
+
+        df['year_val'] = df['Title'].apply(get_year_from_title)
         
+        df = df[df['year_val'] >= 1980]
+        
+        if len(df) > 60:
+            df = df.sample(n=60, random_state=42)
+            
         movies = []
         for _, row in df.iterrows():
             raw_title = str(row['Title'])
-            
-            year_match = re.search(r'\((\d{4})\)', raw_title)
-            year = year_match.group(1) if year_match else "Unknown"
+            year = str(row['year_val'])
             
             clean_title = re.sub(r'\(\d{4}\)', '', raw_title).strip()
             
