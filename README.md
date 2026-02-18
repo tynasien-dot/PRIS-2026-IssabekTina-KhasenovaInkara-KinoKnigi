@@ -1,4 +1,4 @@
-# 🌸 (˶˃ ᵕ ˂˶) .ᐟ.ᐟ Кино и Книги — Советчик 🌸
+# 🌸 (˶˃ ᵕ ˂˶) .ᐟ.ᐟ Кино — Советчик 🌸
 
 ![Python](https://img.shields.io/badge/Python-3.12-pink?style=flat-square&logo=python&logoColor=white)
 ![Streamlit](https://img.shields.io/badge/Streamlit-%E2%9C%A8-fuchsia?style=flat-square&logo=streamlit&logoColor=white)
@@ -14,7 +14,7 @@
 </p>
 
 **Привет! ૮꒰ ˶• ༝ •˶꒱ა**  
-Это интерактивное веб-приложение, которое помогает находить фильмы и книги, похожие на те, что тебе нравятся 💖  
+Это интерактивное веб-приложение, которое помогает находить фильмы, похожие на те, что тебе нравятся 💖  
 
 ---
 
