@@ -3,6 +3,7 @@ import networkx as nx
 from pyvis.network import Network
 import streamlit.components.v1 as components
 import os
+import re
 
 from mock_data import movies_data
 from knowledge_graph import create_graph
@@ -25,19 +26,17 @@ with st.sidebar:
     
     current_movie = next(m for m in st.session_state.movies if m['title'] == selected_name)
     
-    st.text_input("Название фильма:", value=current_movie['title'])
-    st.number_input("IMDB Score:", value=float(current_movie['imdb_score']), step=0.1)
-    st.checkbox("Доступность (Available)", value=True)
-    st.selectbox("Настроение отзывов:", ["positive", "neutral", "negative"])
-    st.text_input("Жанры (через запятую):", value=", ".join(current_movie['genres']))
+    if st.button("Обновить данные"):
+        st.subheader(f"🎬 {current_movie['title']}")
+        st.write(f"**IMDB Score:** {current_movie['imdb_score']}")
+        st.write(f"**Жанры:** {', '.join(current_movie['genres'])}")
+        
+        st.write("**Описание:**")
+        st.info(current_movie.get('description', "Описание временно недоступно."))
+        
+        if current_movie.get('poster'):
+            st.image(current_movie['poster'], use_container_width=True)
     
-    st.button("Обновить данные")
-    
-    st.divider()
-    st.header("⚙️ Валидация")
-    if st.button("Проверить по правилам"):
-        res = check_rules(current_movie)
-        st.info(f"Результат: {res}")
 
 st.title("🎬 Movie Advisor System v2.0")
 
@@ -68,7 +67,11 @@ with col2:
     if user_input := st.chat_input("Спроси про жанр или год..."):
         st.session_state.messages.append({"role": "user", "content": user_input})
         
-        answer = process_text_message(user_input, st.session_state.graph, st.session_state.movies)
+        year_match = re.search(r'(\d{4})', user_input)
+        if year_match and int(year_match.group(1)) < 1980:
+            answer = f"К сожалению, в нашем сервисе только фильмы с 1980 года."
+        else:
+            answer = process_text_message(user_input, st.session_state.graph, st.session_state.movies)
         
         poster_url = None
         for m in st.session_state.movies:
