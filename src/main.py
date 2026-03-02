@@ -19,23 +19,33 @@ if 'messages' not in st.session_state:
     st.session_state.messages = []
 
 with st.sidebar:
-    st.header("📥 Входные данные фильма")
+    st.header("📥 Выбор фильма")
     
     movie_titles = [m['title'] for m in st.session_state.movies]
-    selected_name = st.selectbox("Выберите фильм", movie_titles)
+    selected_name = st.selectbox("Выберите из топ 250-фильмов", movie_titles)
     
     current_movie = next(m for m in st.session_state.movies if m['title'] == selected_name)
     
-    if st.button("Обновить данные"):
+    if st.button("Анализировать фильм"):
         st.subheader(f"🎬 {current_movie['title']}")
-        st.write(f"**IMDB Score:** {current_movie['imdb_score']}")
-        st.write(f"**Жанры:** {', '.join(current_movie['genres'])}")
         
-        st.write("**Описание:**")
-        st.info(current_movie.get('description', "Описание временно недоступно."))
-        
-        if current_movie.get('poster'):
+        if current_movie.get('poster') and current_movie['poster'] != 'nan':
             st.image(current_movie['poster'], use_container_width=True)
+            
+        st.write(f"**Рейтинг:** {current_movie['imdb_score']} ⭐")
+        st.write(f"**Год:** {current_movie['year']}")
+        st.write(f"**Жанры:** {', '.join(current_movie['genres'])}")
+
+        st.divider()
+        
+        st.subheader("Оценка системы")
+        
+        from logic import apply_production_model
+        verdict = apply_production_model(current_movie)
+        
+        st.success(verdict) 
+
+    st.divider()
     
 
 st.title("🎬 Movie Advisor System v2.0")
