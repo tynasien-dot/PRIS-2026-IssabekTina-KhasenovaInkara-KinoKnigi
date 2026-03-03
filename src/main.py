@@ -45,12 +45,12 @@ with st.sidebar:
         st.divider()
         st.subheader("Оценка системы")
         
-        verdict = apply_production_model(current_movie)
+        verdict = check_rules(current_movie)
         st.success(verdict)
 
     st.divider()
 
-# main interface
+# main
 
 st.title("🎬 Movie Advisor System v2.0")
 
@@ -72,7 +72,7 @@ with col1:
 
     components.html(html_data, height=450)
 
-# чатбот консультант
+# чатбот
 
 with col2:
     st.subheader("💬 Чат-бот консультант")
@@ -102,12 +102,13 @@ with col2:
                 st.session_state.movies
             )
 
-        # поиск рекомендаций
+        # поиск рекомендаций на основе ответа
 
         recommended_movies = []
 
         for m in st.session_state.movies:
-            if m['title'].lower() in answer.lower():
+            if m['title'].lower() in answer.lower() or \
+               m['description'].lower() in answer.lower():
                 recommended_movies.append(m)
 
         recommended_movies = recommended_movies[:3]
@@ -118,9 +119,7 @@ with col2:
 
             for idx, movie in enumerate(recommended_movies, 1):
 
-                validation_result = check_rules(movie)
-
-                validation_text = "🟢 Правильно" if validation_result else "🔴 Нарушение правил"
+                validation_text = apply_production_model(movie)
 
                 poster = movie.get("poster")
                 poster_html = ""
@@ -134,21 +133,21 @@ with col2:
 
                 detailed_info_text += f"""
 ---
-🏆 **#{idx}**
+🏆 #{idx}
 
-📌 **Название:** {movie.get('title', '—')}
-⭐ **Рейтинг:** {movie.get('imdb_score', '—')}
-📅 **Год:** {movie.get('year', '—')}
-🎭 **Жанры:** {', '.join(movie.get('genres', []))}
+📌 Название: {movie.get('title', '—')}
+⭐ Рейтинг: {movie.get('imdb_score', '—')}
+📅 Год: {movie.get('year', '—')}
+🎭 Жанры: {', '.join(movie.get('genres', []))}
 
-📝 **Описание:**
+📝 Описание:
 {movie.get('description', 'Описание недоступно.')}
 
-Валидация: {validation_text}
+⚖️ Валидация: {validation_text}
 
 {poster_html}
 """
-
+        # Исправлено: эти строки теперь внутри блока "if user_input"
         final_answer = answer + ("\n\n" + detailed_info_text if recommended_movies else "")
 
         st.session_state.messages.append({
