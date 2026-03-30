@@ -1,5 +1,42 @@
 import json
 import os
+import requests
+import streamlit as st
+import re
+
+@st.cache_data(ttl=86400)
+def get_movie_poster(movie_title, movie_year=None):
+    """Ищет фильм в TMDB и возвращает актуальную ссылку на постер."""
+    try:
+        api_key = st.secrets["TMDB_API_KEY"]
+    except KeyError:
+        return "https://via.placeholder.com/500x750.png?text=API+Key+Missing"
+
+    base_url = "https://api.themoviedb.org/3/search/movie"
+    
+    clean_title = re.sub(r'\(\d{4}\)', '', str(movie_title)).strip()
+    
+    params = {
+        "api_key": api_key,
+        "query": clean_title,
+        "language": "ru-RU"
+    }
+    
+    if movie_year:
+        params["year"] = str(movie_year)
+    
+    try:
+        response = requests.get(base_url, params=params, timeout=5)
+        response.raise_for_status()
+        data = response.json()
+        
+        if data.get("results") and data["results"][0].get("poster_path"):
+            path = data["results"][0]["poster_path"]
+            return f"https://image.tmdb.org/t/p/w500{path}"
+    except Exception as e:
+        print(f"Ошибка API для '{clean_title}': {e}")
+        
+    return "https://via.placeholder.com/500x750.png?text=No+Poster+Found"
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 RULES_PATH = os.path.join(BASE_DIR, 'data', 'raw', 'rules.json')
