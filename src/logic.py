@@ -92,7 +92,16 @@ def process_text_message(text, graph, movies_list):
 
 def apply_production_model(movie):
     score = movie.get('imdb_score', 0)
+    genres = movie.get('genres', [])
     year = int(movie.get('year', 0))
-    if score >= 8.0 and year < 2005: return "🏆 Это культовая классика."
-    if score >= 8.0 and year >= 2015: return "🔥 Современный шедевр."
-    return "✅ Хороший выбор."
+    
+    if score >= 8.0 and year < 2005:
+        return "🏆 Это культовая классика, проверенная временем."
+    
+    if "Animation" in genres and score >= 8.0: # <--- ПРОВЕРЬ ТУТ ЖАНР
+        return "🎨 Эталонна анимация, рекомендованная всем возрастам."
+    
+    if "Drama" in genres and score >= 7.8:
+        return "🎭 Серьезная психологическая работа."
+    
+    return "✅ Качественный контент, прошедший фильтрацию."
