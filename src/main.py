@@ -3,16 +3,26 @@ import networkx as nx
 from pyvis.network import Network
 import streamlit.components.v1 as components
 import os
+import re
+from PIL import Image
+
+# Твои файлы
 from mock_data import movies_data
 from knowledge_graph import create_graph
 from logic import check_rules, process_text_message, apply_production_model, get_movie_details
 
+# Файл подруги
+from vision_model import predict_genres
+
 st.set_page_config(page_title="Movie Advisor System", layout="wide")
 
+# Инициализация графа
 if 'graph' not in st.session_state:
     st.session_state.graph = create_graph()
+
 st.session_state.movies = movies_data
 
+# Инициализация сообщений и приветствие (БЕЗ ИМЕНИ, ПОЛНОЕ)
 if 'messages' not in st.session_state:
     st.session_state.messages = []
     welcome_text = process_text_message("привет", st.session_state.graph, st.session_state.movies)
@@ -51,26 +61,45 @@ with col1:
 with col2:
     st.subheader("💬 Чат-бот консультант")
     
-    # ЗАГРУЗКА ФАЙЛА (Для будущей функции Computer Vision)
-    uploaded_file = st.file_uploader("Загрузи постер для определения жанра", type=['jpg', 'png', 'jpeg'])
+    # БЛОК КОМПЬЮТЕРНОГО ЗРЕНИЯ (CV)
+    uploaded_file = st.file_uploader("🖼 Загрузи постер для определения жанра", type=['jpg', 'png', 'jpeg'])
     
     if uploaded_file is not None:
-        # код (Computer Vision)
-        st.info("Файл получен. Нейросеть анализирует изображение...")
-        st.warning("Функция определения жанра будет доступна после интеграции модели.")
+        image = Image.open(uploaded_file).convert("RGB")
+        st.image(image, caption="Кадр для анализа", width=300)
+        
+        with st.spinner("Нейросеть анализирует изображение..."):
+            cv_results = predict_genres(image)
+            
+            cv_text = "🤖 **Результат анализа постера:**\n\n"
+            for genre, score in cv_results:
+                cv_text += f"• {genre}: {score*100:.1f}%\n"
+            
+            # Добавляем рекомендации на основе топ-1 жанра
+            top_genre = cv_results[0][0]
+            matched = [m for m in st.session_state.movies if top_genre.lower() in [g.lower() for g in m['genres']]][:2]
+            
+            if matched:
+                cv_text += f"\n🍿 Похоже на **{top_genre}**. Советую глянуть: " + ", ".join([m['title'] for m in matched])
+            
+            st.session_state.messages.append({"role": "assistant", "content": cv_text})
+            st.toast(f"Жанр определен: {top_genre}")
 
+    # КОНТЕЙНЕР ЧАТА
     chat_container = st.container(height=400)
     with chat_container:
         for message in st.session_state.messages:
             with st.chat_message(message["role"]):
                 st.markdown(message["content"], unsafe_allow_html=True)
 
+    # Ввод и Кнопка-кубик
     col_input, col_btn = st.columns([0.85, 0.15])
     with col_input:
         user_input = st.chat_input("Спроси про жанр или год...")
     with col_btn:
         luck_clicked = st.button("🎲")
 
+    # Обработка ввода
     final_query = None
     if luck_clicked:
         final_query = "мне повезет"
@@ -80,8 +109,10 @@ with col2:
     if final_query:
         display_text = "🎲 Выбери мне случайный фильм!" if final_query == "мне повезет" else final_query
         st.session_state.messages.append({"role": "user", "content": display_text})
+        
         answer = process_text_message(final_query, st.session_state.graph, st.session_state.movies)
 
+        # Подтягиваем карточки фильмов, если они есть в ответе
         recommended_movies = [m for m in st.session_state.movies if m['title'].lower() in answer.lower()]
         limit = 1 if final_query == "мне повезет" else 3
         recommended_movies = recommended_movies[:limit]
