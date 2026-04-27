@@ -7,7 +7,6 @@ import random
 
 @st.cache_data(ttl=86400)
 def get_movie_details(movie_title, movie_year=None):
-    """Ищет фильм в TMDB и возвращает постер и краткое описание."""
     try:
         api_key = st.secrets["TMDB_API_KEY"]
     except KeyError:
@@ -59,7 +58,7 @@ def check_rules(movie_dict):
 def process_text_message(text, graph, movies_list):
     query = text.lower().strip()
     
-    # НОВОЕ ПОЛНОЕ ПРИВЕТСТВИЕ (Без имени)
+    # ПРИВЕТСТВИЕ 
     if query in ["привет", "старт", "hi", "hello", "/start"]:
         return ("Салем! Я твой интеллектуальный киносоветчик. 🎬\n\n"
                 "**Чем я могу быть полезен?**\n"
@@ -96,12 +95,15 @@ def apply_production_model(movie):
     year = int(movie.get('year', 0))
     
     if score >= 8.0 and year < 2005:
-        return "🏆 Это культовая классика, проверенная временем."
+        return "🏆Это культовая классика, проверенная временем."
     
-    if "Animation" in genres and score >= 8.0: # <--- ПРОВЕРЬ ТУТ ЖАНР
-        return "🎨 Эталонна анимация, рекомендованная всем возрастам."
+    if score >= 8.0 and year >= 2015:
+        return "🔥Современный блокбастер с высочайшим одобрением зрителей."
+    
+    if "Animation" in genres and score >= 8.0:
+        return "🎨Эталонная анимация, рекомендованная всем возрастам."
     
     if "Drama" in genres and score >= 7.8:
-        return "🎭 Серьезная психологическая работа."
+        return "🎭Серьезная психологическая работа для вдумчивого просмотра."
     
-    return "✅ Качественный контент, прошедший фильтрацию."
+    return "✅Качественный контент, прошедший фильтрацию по рейтингу 7.5+."

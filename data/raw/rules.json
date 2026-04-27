@@ -6,12 +6,5 @@
   },
   "critical_rules": {
     "must_be_available": true
-  },
-  "lists": {
-    "blacklist": [
-      "Horror",
-      "Gore",
-      "Restricted"
-    ]
   }
 }

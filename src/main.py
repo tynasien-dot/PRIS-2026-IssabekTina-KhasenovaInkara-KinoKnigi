@@ -6,12 +6,9 @@ import os
 import re
 from PIL import Image
 
-# Твои файлы
 from mock_data import movies_data
 from knowledge_graph import create_graph
 from logic import check_rules, process_text_message, apply_production_model, get_movie_details
-
-# Файл подруги
 from vision_model import predict_genres
 
 st.set_page_config(page_title="Movie Advisor System", layout="wide")
@@ -22,7 +19,7 @@ if 'graph' not in st.session_state:
 
 st.session_state.movies = movies_data
 
-# Инициализация сообщений и приветствие (БЕЗ ИМЕНИ, ПОЛНОЕ)
+# Инициализация сообщений и приветствие 
 if 'messages' not in st.session_state:
     st.session_state.messages = []
     welcome_text = process_text_message("привет", st.session_state.graph, st.session_state.movies)
@@ -112,7 +109,6 @@ with col2:
         
         answer = process_text_message(final_query, st.session_state.graph, st.session_state.movies)
 
-        # Подтягиваем карточки фильмов, если они есть в ответе
         recommended_movies = [m for m in st.session_state.movies if m['title'].lower() in answer.lower()]
         limit = 1 if final_query == "мне повезет" else 3
         recommended_movies = recommended_movies[:limit]

@@ -8,8 +8,6 @@ def load_clean_data():
     
     try:
         df = pd.read_csv(file_path, encoding='latin-1')
-        # добавлена фильтрация строк без постеров 
-        df = df.dropna(subset=['Title', 'Genre', 'IMDB Score', 'Poster'])
         
         # вытаскиваем год из столбца тайтл
         def get_year_from_title(title_string):
@@ -20,7 +18,7 @@ def load_clean_data():
 
         df['year_val'] = df['Title'].apply(get_year_from_title)
         
-        # добавлен фильтр рейтинга и проверка на пустую строку в постере
+
         df = df[
             (df['year_val'] >= 1980) & 
             (df['IMDB Score'] >= 7.5) & 
